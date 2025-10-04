@@ -45,9 +45,6 @@ type CameraModifier struct {
 }
 
 func NewCameraController() *CameraController {
-	offsetX := rl.GetRenderWidth() / 2.0
-	offsetY := rl.GetRenderHeight() / 2.0
-
 	baseModifier := &CameraModifier{
 		Name:       "UserControl",
 		ZoomFactor: DefaultZoom,
@@ -56,7 +53,7 @@ func NewCameraController() *CameraController {
 
 	return &CameraController{
 		camera: rl.NewCamera2D(
-			rl.Vector2{X: float32(offsetX), Y: float32(offsetY)},
+			rl.Vector2{X: 0, Y: 0},
 			rl.Vector2{X: 0, Y: 0},
 			DefaultRotation,
 			DefaultZoom,
@@ -104,8 +101,8 @@ func (cc *CameraController) RemoveModifier(name string) {
 	}
 }
 
-func (cc *CameraController) GetCamera() rl.Camera2D {
-	return cc.camera
+func (cc *CameraController) GetCamera() *rl.Camera2D {
+	return &cc.camera
 }
 
 func (cc *CameraController) SetFollowTarget(target rl.Vector2) {
