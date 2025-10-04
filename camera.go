@@ -15,6 +15,13 @@ const (
 	DefaultFollowSpeed   float32 = 5.0
 )
 
+type MovementMode int
+
+const (
+	ModeInstant MovementMode = iota
+	ModeLerp
+)
+
 type CameraController struct {
 	camera rl.Camera2D
 
@@ -25,6 +32,10 @@ type CameraController struct {
 	FollowSpeed   float32
 
 	followTarget rl.Vector2
+
+	ZoomMode     MovementMode
+	RotationMode MovementMode
+	FollowMode   MovementMode
 }
 
 type CameraEffect struct {
@@ -58,6 +69,10 @@ func NewCameraController() *CameraController {
 		FollowSpeed:   DefaultFollowSpeed,
 
 		followTarget: rl.Vector2{X: 0, Y: 0},
+
+		ZoomMode:     ModeLerp,
+		RotationMode: ModeLerp,
+		FollowMode:   ModeLerp,
 	}
 }
 
@@ -107,8 +122,25 @@ func (cc *CameraController) Update() {
 	}
 
 	targetZoom = rl.Clamp(targetZoom, MinZoom, MaxZoom)
+	
+	switch cc.ZoomMode{
+	case ModeInstant:
+		cc.camera.Zoom = targetZoom
+	case ModeLerp:
+		cc.camera.Zoom = rl.Lerp(cc.camera.Zoom, targetZoom, cc.ZoomSpeed*rl.GetFrameTime())
+	}
 
-	cc.camera.Zoom = rl.Lerp(cc.camera.Zoom, targetZoom, cc.ZoomSpeed*rl.GetFrameTime())
-	cc.camera.Rotation = rl.Lerp(cc.camera.Rotation, targetRotation, cc.RotationSpeed*rl.GetFrameTime())
-	cc.camera.Target = rl.Vector2Lerp(cc.camera.Target, cc.followTarget, cc.FollowSpeed*rl.GetFrameTime())
+	switch cc.RotationMode{
+	case ModeInstant:
+		cc.camera.Rotation = targetRotation
+	case ModeLerp:
+		cc.camera.Rotation = rl.Lerp(cc.camera.Rotation, targetRotation, cc.RotationSpeed*rl.GetFrameTime())
+	}
+
+	switch cc.FollowMode{
+	case ModeInstant:
+		cc.camera.Target = cc.followTarget
+	case ModeLerp:
+		cc.camera.Target = rl.Vector2Lerp(cc.camera.Target, cc.followTarget, cc.FollowSpeed*rl.GetFrameTime())
+	}
 }
