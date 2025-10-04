@@ -25,7 +25,7 @@ const (
 type CameraController struct {
 	camera rl.Camera2D
 
-	activeEffects []*CameraEffect
+	activeModifiers []*CameraModifier
 
 	RotationSpeed float32
 	ZoomSpeed     float32
@@ -38,7 +38,7 @@ type CameraController struct {
 	FollowMode   MovementMode
 }
 
-type CameraEffect struct {
+type CameraModifier struct {
 	Name       string
 	ZoomFactor float32
 	Rotation   float32
@@ -48,7 +48,7 @@ func NewCameraController() *CameraController {
 	offsetX := rl.GetRenderWidth() / 2.0
 	offsetY := rl.GetRenderHeight() / 2.0
 
-	baseEffect := &CameraEffect{
+	baseModifier := &CameraModifier{
 		Name:       "UserControl",
 		ZoomFactor: DefaultZoom,
 		Rotation:   DefaultRotation,
@@ -62,7 +62,7 @@ func NewCameraController() *CameraController {
 			DefaultZoom,
 		),
 
-		activeEffects: []*CameraEffect{baseEffect},
+		activeModifiers: []*CameraModifier{baseModifier},
 
 		RotationSpeed: DefaultRotationSpeed,
 		ZoomSpeed:     DefaultZoomSpeed,
@@ -76,29 +76,29 @@ func NewCameraController() *CameraController {
 	}
 }
 
-func NewCameraEffect(name string, zoomFactor, rotation float32) *CameraEffect {
-	return &CameraEffect{
+func NewCameraModifier(name string, zoomFactor, rotation float32) *CameraModifier {
+	return &CameraModifier{
 		Name:       name,
 		ZoomFactor: zoomFactor,
 		Rotation:   rotation,
 	}
 }
 
-func (cc *CameraController) AddEffect(ce *CameraEffect) {
-	for _, effect := range cc.activeEffects {
-		if effect.Name == ce.Name {
+func (cc *CameraController) AddModifer(ce *CameraModifier) {
+	for _, mod := range cc.activeModifiers {
+		if mod.Name == ce.Name {
 			return
 		}
 	}
-	cc.activeEffects = append(cc.activeEffects, ce)
+	cc.activeModifiers = append(cc.activeModifiers, ce)
 }
 
-func (cc *CameraController) RemoveEffect(name string) {
-	for i, effect := range cc.activeEffects {
-		if effect.Name == name {
-			lastIndex := len(cc.activeEffects) - 1
-			cc.activeEffects[i] = cc.activeEffects[lastIndex]
-			cc.activeEffects = cc.activeEffects[:lastIndex]
+func (cc *CameraController) RemoveModifier(name string) {
+	for i, mod := range cc.activeModifiers {
+		if mod.Name == name {
+			lastIndex := len(cc.activeModifiers) - 1
+			cc.activeModifiers[i] = cc.activeModifiers[lastIndex]
+			cc.activeModifiers = cc.activeModifiers[:lastIndex]
 			return
 		}
 	}
@@ -116,13 +116,13 @@ func (cc *CameraController) Update() {
 	targetZoom := DefaultZoom
 	targetRotation := DefaultRotation
 
-	for _, v := range cc.activeEffects {
+	for _, v := range cc.activeModifiers {
 		targetZoom *= v.ZoomFactor
 		targetRotation += v.Rotation
 	}
 
 	targetZoom = rl.Clamp(targetZoom, MinZoom, MaxZoom)
-	
+
 	switch cc.ZoomMode{
 	case ModeInstant:
 		cc.camera.Zoom = targetZoom
